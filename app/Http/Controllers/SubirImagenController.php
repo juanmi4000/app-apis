@@ -7,6 +7,7 @@ use Facebook\Facebook;
 use Facebook\Exceptions\FacebookResponseException;
 use Facebook\Exceptions\FacebookSDKException;
 use Illuminate\Support\Facades\Http;
+use App\Models\Imagen;
 
 class SubirImagenController extends Controller
 {
@@ -14,24 +15,25 @@ class SubirImagenController extends Controller
     {
         // Validar la solicitud
         $request->validate([
-            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validación para asegurar que se recibe una imagen
+            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'comentario' => 'nullable|string|max:255',
         ]);
 
-        // Subir la imagen a ImgBB
-        $response = Http::attach(
-            'image', 
-            file_get_contents($request->file('imagen')->getRealPath()), 
-            'imagen.jpg' // Puedes cambiar el nombre de la imagen aquí
-        )->post('https://api.imgbb.com/1/upload?key=' . env('IMG_BB_API_KEY'));
+        // Manejar la subida de la imagen
+        if ($request->hasFile('imagen')) {
+            $imagen = $request->file('imagen');
+            $ruta = $imagen->store('imagenes', 'public');
 
-        // Verificar si la carga de la imagen fue exitosa
-        if ($response->successful()) {
-            $imageUrl = $response->json()['data']['url'];
-            // Aquí puedes hacer cualquier otra cosa con la URL de la imagen, como guardarla en una base de datos o mostrarla en la vista
-            return "Imagen subida exitosamente. URL de la imagen: $imageUrl";
-        } else {
-            return "Error al subir la imagen a ImgBB.";
+            // Guardar información en la base de datos
+            Imagen::create([
+                'ruta' => $ruta,
+                'comentario' => $request->comentario,
+            ]);
+
+            return redirect()->back()->with('success', 'Imagen subida correctamente.');
         }
+
+        return redirect()->back()->with('error', 'Hubo un problema al subir la imagen.');
     }
 
     public function obtenerImagenesInstagram()
