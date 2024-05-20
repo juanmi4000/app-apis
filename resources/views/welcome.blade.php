@@ -64,6 +64,7 @@
 				<button type="submit" class="px-6 py-2 bg-black text-white font-semibold rounded-md hover:bg-gray-800">Subir Imagen</button>
 			</form>
 		</div>
+		@yield('section')
 	</body>
 </html>
 
