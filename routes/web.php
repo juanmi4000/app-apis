@@ -10,6 +10,5 @@ Route::get('/', function () {
 
 
 
-Route::post('/subir-imagen', [SubirImagenController::class, 'subirImagen']);
-Route::get('/obtener-imagenes-instagram', [SubirImagenController::class, 'obtenerImagenesInstagram']);
-Route::post('/subir-imagen', [SubirImagenController::class, 'subirImagen'])->name('subir-imagen');
+Route::get('/instagram', 'InstagramController@index');
+Route::post('/instagram', 'InstagramController@upload');
