@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use FacebookAds\Api;
 use Illuminate\Support\Facades\Http;
 
-class InstagramController
+class InstagramController extends Controller
 {
     private $fb;
     private $accessToken;
