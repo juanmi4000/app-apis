@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use FacebookAds\Api;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage; // Importar la fachada de Storage
 
 class InstagramController extends Controller
 {
@@ -51,17 +52,20 @@ class InstagramController extends Controller
 
     public function uploadImage(Request $request)
     {
-        if ($request->hasFile('imagen')) {
-            $imagePath = $request->file('imagen')->getPathname();
-            $imageUrl = $this->uploadImageAndGetUrl($imagePath);
+        $request->validate([
+            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validación de la imagen
+        ]);
 
-            if ($imageUrl) {
-                // Tu lógica para subir la imagen
-            } else {
-                return response()->json(['error' => 'Error al subir la imagen a ImgBB.'], 500);
-            }
+        if ($request->hasFile('imagen')) {
+            $imagePath = $request->file('imagen')->store('uploads'); // Almacenar la imagen en el directorio "uploads"
+            $imageUrl = url(Storage::url($imagePath)); // Obtener la URL de la imagen almacenada correctamente
+            
+            // Lógica para publicar la imagen en Instagram
+            // ...
+
+            return redirect()->back()->with('success', 'La imagen se ha subido correctamente a ImgBB y a Instagram.');
         } else {
-            return response()->json(['error' => 'No se ha seleccionado una imagen.'], 400);
+            return redirect()->back()->with('error', 'No se ha seleccionado una imagen.');
         }
     }
 

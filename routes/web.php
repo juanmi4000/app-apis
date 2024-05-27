@@ -8,4 +8,4 @@ use App\Http\Controllers\InstagramController;
 Route::get('/', function () {
     return view('index');
 });
-Route::post('/subir-imagen', [InstagramController::class, 'uploadImage'])->name('instagram.upload');
+Route::post('/subir-imagen', [InstagramController::class, 'uploadImage'])->name('subir_imagen');

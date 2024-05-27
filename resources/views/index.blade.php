@@ -146,7 +146,7 @@
 
     <div class="container">
         <h1>Subir Imágenes a Instagram</h1>
-        <form action="{{ route('instagram.upload') }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('subir_imagen') }}" method="post" enctype="multipart/form-data">
             @csrf
             <label for="imagen">Seleccionar imagen:</label>
             <input type="file" name="imagen" id="imagen" accept="image/*" required>
@@ -154,6 +154,18 @@
             <textarea name="comentario" id="comentario" rows="4" placeholder="Escribe un comentario aquí"></textarea>
             <button type="submit">Subir Imagen</button>
         </form>
+        
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+        
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
     </div>
 
     <div class="container2">
