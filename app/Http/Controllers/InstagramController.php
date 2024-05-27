@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Facebook\Facebook;
+use Illuminate\Support\Facades\Http;
 
 class InstagramController extends Controller
 {
@@ -24,32 +25,34 @@ class InstagramController extends Controller
     }
 
     public function index()
-{
-    // Verificar configuración
-    if (!$this->accessToken || !$this->igUserId) {
-        return response()->json(['error' => 'Instagram access token or user ID is not set.'], 500);
-    }
-
-    try {
-        $response = $this->fb->get('/' . $this->igUserId . '/media', $this->accessToken);
-        $graphEdge = $response->getGraphEdge();
-
-        if (!$graphEdge || !$graphEdge->asArray()) {
-            return response()->json(['error' => 'No se encontraron datos en la respuesta de la API de Facebook.'], 500);
+    {
+        // Verificar configuración
+        if (!$this->accessToken || !$this->igUserId) {
+            return response()->json(['error' => 'Instagram access token or user ID is not set.'], 500);
         }
 
-        $data = [];
-        foreach ($graphEdge as $item) {
-            $data[] = $item->asArray();
-        }
-        return view('instagram.index', ['data' => $data]);
-    } catch (\Facebook\Exceptions\FacebookResponseException $e) {
-        return response()->json(['error' => 'Graph returned an error: ' . $e->getMessage()], 500);
-    } catch (\Facebook\Exceptions\FacebookSDKException $e) {
-        return response()->json(['error' => 'Facebook SDK returned an error: ' . $e->getMessage()], 500);
-    }
-}
+        try {
+            $response = $this->fb->get('/' . $this->igUserId . '/media', $this->accessToken);
+            $graphEdge = $response->getGraphEdge();
 
+            if (!$graphEdge) {
+                return response()->json(['error' => 'No se encontraron datos en la respuesta de la API de Facebook.'], 500);
+            }
+
+            $data = [];
+            foreach ($graphEdge as $item) {
+                $itemArray = $item->asArray();
+                if (isset($itemArray[1])) {
+                    $data[] = $itemArray[1];
+                }
+            }
+            return view('instagram.index', ['data' => $data]);
+        } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+            return response()->json(['error' => 'Graph returned an error: ' . $e->getMessage()], 500);
+        } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+            return response()->json(['error' => 'Facebook SDK returned an error: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function uploadImage(Request $request)
     {
@@ -65,8 +68,6 @@ class InstagramController extends Controller
                     ], $this->accessToken);
 
                     $graphNode = $response->getGraphNode();
-                    dd($graphNode);
-
                     if (isset($graphNode['id'])) {
                         $containerId = $graphNode['id'];
 
