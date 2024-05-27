@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Facebook\Facebook;
 
 class InstagramController extends Controller
@@ -26,64 +25,69 @@ class InstagramController extends Controller
 
     public function index()
 {
+    // Verificar configuración
+    if (!$this->accessToken || !$this->igUserId) {
+        return response()->json(['error' => 'Instagram access token or user ID is not set.'], 500);
+    }
+
     try {
         $response = $this->fb->get('/' . $this->igUserId . '/media', $this->accessToken);
-    } catch(\Facebook\Exceptions\FacebookResponseException $e) {
-        // Cuando Graph devuelve un error
-        echo 'Graph returned an error: ' . $e->getMessage();
-        exit;
-    } catch(\Facebook\Exceptions\FacebookSDKException $e) {
-        // Cuando la validación falla o hay otros problemas locales
-        echo 'Facebook SDK returned an error: ' . $e->getMessage();
-        exit;
-    }
+        $graphEdge = $response->getGraphEdge();
 
-    $graphEdge = $response->getGraphEdge();
-
-    // Imprimir la respuesta completa
-    echo '<pre>';
-    print_r($graphEdge->asArray());
-    echo '</pre>';
-
-    $images = [];
-    foreach ($graphEdge as $graphNode) {
-        $array = $graphNode->asArray();
-        if ($array && array_key_exists('media_url', $array)) {
-            $images[] = $graphNode->getField('media_url');
-        } else {
-            // Manejo de errores: la API de Instagram no devolvió 'media_url'
-            error_log('Instagram API did not return media_url for node: ' . print_r($graphNode, true));
+        if (!$graphEdge || !$graphEdge->asArray()) {
+            return response()->json(['error' => 'No se encontraron datos en la respuesta de la API de Facebook.'], 500);
         }
-    }
 
-    return view('index', ['images' => $images]);
+        $data = [];
+        foreach ($graphEdge as $item) {
+            $data[] = $item->asArray();
+        }
+        return view('instagram.index', ['data' => $data]);
+    } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+        return response()->json(['error' => 'Graph returned an error: ' . $e->getMessage()], 500);
+    } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+        return response()->json(['error' => 'Facebook SDK returned an error: ' . $e->getMessage()], 500);
+    }
 }
+
 
     public function uploadImage(Request $request)
     {
         if ($request->hasFile('imagen')) {
             $imagePath = $request->file('imagen')->getPathname();
-
             $imageUrl = $this->uploadImageAndGetUrl($imagePath);
 
             if ($imageUrl) {
-                $response = $this->fb->post('/' . $this->igUserId . '/media', [
-                    'image_url' => $imageUrl,
-                    'caption' => $request->input('comentario')
-                ], $this->accessToken);
-                $graphNode = $response->getGraphNode();
-                $containerId = $graphNode['id'];
+                try {
+                    $response = $this->fb->post('/' . $this->igUserId . '/media', [
+                        'image_url' => $imageUrl,
+                        'caption' => $request->input('comentario')
+                    ], $this->accessToken);
 
-                $response = $this->fb->post('/' . $this->igUserId . '/media_publish', [
-                    'creation_id' => $containerId
-                ], $this->accessToken);
+                    $graphNode = $response->getGraphNode();
+                    dd($graphNode);
 
-                return redirect()->route('instagram.index')->with('success', 'Imagen publicada exitosamente en Instagram.');
+                    if (isset($graphNode['id'])) {
+                        $containerId = $graphNode['id'];
+
+                        $response = $this->fb->post('/' . $this->igUserId . '/media_publish', [
+                            'creation_id' => $containerId
+                        ], $this->accessToken);
+
+                        return redirect()->route('instagram.index')->with('success', 'Imagen publicada exitosamente en Instagram.');
+                    } else {
+                        return response()->json(['error' => 'No se pudo obtener el ID del contenedor de la imagen.'], 500);
+                    }
+                } catch (\Facebook\Exceptions\FacebookResponseException $e) {
+                    return response()->json(['error' => 'Facebook returned an error: ' . $e->getMessage()], 500);
+                } catch (\Facebook\Exceptions\FacebookSDKException $e) {
+                    return response()->json(['error' => 'Facebook SDK returned an error: ' . $e->getMessage()], 500);
+                }
             } else {
-                return 'Error al subir la imagen a ImgBB.';
+                return response()->json(['error' => 'Error al subir la imagen a ImgBB.'], 500);
             }
         } else {
-            return 'Error: No se ha seleccionado una imagen.';
+            return response()->json(['error' => 'No se ha seleccionado una imagen.'], 400);
         }
     }
 
@@ -91,19 +95,20 @@ class InstagramController extends Controller
     {
         $uploadUrl = 'https://api.imgbb.com/1/upload?key=' . env('IMGBB_API_KEY');
 
-        $response = Http::asForm()->post($uploadUrl, [
-            'image' => base64_encode(file_get_contents($imagePath))
-        ]);
+        try {
+            $response = Http::asForm()->post($uploadUrl, [
+                'image' => base64_encode(file_get_contents($imagePath))
+            ]);
 
-        if ($response->successful()) {
             $responseData = $response->json();
-            if (isset($responseData['data']) && isset($responseData['data']['url'])) {
-                return $responseData['data']['url'];
-            } else {
-                return false;
-            }
-        }
 
-        return false;
+            if ($response->successful() && isset($responseData['data']['url'])) {
+                return $responseData['data']['url'];
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
