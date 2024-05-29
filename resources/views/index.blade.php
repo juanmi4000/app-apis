@@ -46,17 +46,7 @@
             </div>
         @endif
     </div>
-
-    <div class="container2">
-        <h1>Imágenes de Instagram</h1>
-        <div class="gallery">
-            <?php
-                /* @foreach ($images as $image)
-                    <div class="image"><img src="{{ $image }}" alt="Imagen de Instagram"></div>
-                @endforeach */
-            ?>
         </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
