@@ -9,3 +9,6 @@ Route::get('/', function () {
     return view('index');
 });
 Route::post('/subir-imagen', [InstagramController::class, 'uploadImage'])->name('subir_imagen');
+Route::get('/instagram', [InstagramController::class, 'index'])->name('instagram.index');
+Route::post('/instagram/programar-publicacion', [InstagramController::class, 'programarPublicacion'])->name('instagram.programarPublicacion');
+Route::post('/upload/image', 'InstagramController@uploadImage')->name('upload.image');

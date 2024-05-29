@@ -16,43 +16,133 @@
         crossorigin="anonymous"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js'></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .container {
+            width: 45%;
+            margin: 0 auto;
+        }
+
+        .container.calendar {
+            order: 1;
+        }
+
+        .container.form {
+            order: 2;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-gap: 20px;
+        }
+
+        .image img {
+            width: 100%;
+            height: auto;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        /* Ocultar la segunda sección por defecto */
+        .second-section {
+            display: none;
+        }
+    </style>
 </head>
 
 <body class="font-sans antialiased">
-
     @include('layout.header')
-    @include('layout.calendario')
 
     <div class="container">
-        <h1>Subir Imágenes a Instagram</h1>
-        <form action="{{ route('subir_imagen') }}" method="post" enctype="multipart/form-data">
-            @csrf
-            <label for="imagen">Seleccionar imagen:</label>
-            <input type="file" name="imagen" id="imagen" accept="image/*" required>
-            <label for="comentario">Comentario (opcional):</label>
-            <textarea name="comentario" id="comentario" rows="4" placeholder="Escribe un comentario aquí"></textarea>
-            <button type="submit">Subir Imagen</button>
-        </form>
+        <h1>Selecciona una fecha y hora para programar tu publicación en Instagram:</h1>
+        <div id="datetime-picker">
+            <label for="date">Fecha:</label>
+            <input type="date" id="date">
+            <label for="time">Hora:</label>
+            <input type="time" id="time">
+            <!-- Agregar un botón para mostrar la segunda sección del formulario -->
+            <button onclick="showSecondSection()">Siguiente</button>
+        </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
+        <!-- Segunda sección del formulario (para cargar la imagen y el texto opcional) -->
+        <div id="second-section" class="second-section">
+            <form action="{{ route('upload.image') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <label for="imagen">Selecciona una imagen:</label>
+                    <input type="file" id="imagen" name="imagen">
+                </div>
+                <div class="form-group">
+                    <label for="descripcion">Descripción (opcional):</label>
+                    <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+                </div>
+                <button type="submit">Subir Imagen</button>
+            </form>
+        </div>
     </div>
 
-</div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+    <script>
+        // Función para mostrar la segunda sección del formulario cuando se selecciona la fecha y hora
+        function showSecondSection() {
+            document.getElementById('second-section').style.display = 'block';
+        }
+    </script>
 </body>
-
 
 </html>

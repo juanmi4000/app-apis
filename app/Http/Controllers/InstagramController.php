@@ -23,16 +23,68 @@ class InstagramController extends Controller
 
     public function index()
     {
-        if (!$this->accessToken || !$this->igUserId) {
-            return response()->json(['error' => 'Instagram access token or user ID is not set.'], 500);
-        }
-
-        try {
-            // Tu lógica para obtener campañas
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);
-        }
+        return view('instagram.index');
     }
+
+    public function programarPublicacion(Request $request)
+{
+    // Recibir la fecha y la hora desde la solicitud
+    $fecha = $request->input('fecha');
+    $hora = $request->input('hora');
+
+    // Validar la fecha y la hora (puedes agregar tus propias validaciones aquí)
+    if (!$this->validateFechaHora($fecha, $hora)) {
+        return response()->json(['error' => 'La fecha u hora proporcionadas no son válidas.'], 400);
+    }
+
+    // Formatear la fecha y la hora en un formato compatible con la API de Instagram
+    $timestamp = strtotime("$fecha $hora");
+    $instagramDateTime = date('Y-m-d\TH:i:s', $timestamp);
+
+    // Lógica para programar la publicación en Instagram
+    $result = $this->programarPublicacionInstagram($instagramDateTime);
+
+    if ($result) {
+        return response()->json(['success' => 'Publicación programada con éxito.']);
+    } else {
+        return response()->json(['error' => 'Error al programar la publicación en Instagram.'], 500);
+    }
+}
+
+private function validateFechaHora($fecha, $hora)
+{
+    // Verificar si la fecha y hora están en un formato válido
+    if (!strtotime("$fecha $hora")) {
+        return false; // Si no se puede convertir a un timestamp, la fecha u hora no son válidas
+    }
+
+    // Verificar si la fecha y hora están en el futuro
+    $timestamp = strtotime("$fecha $hora");
+    if ($timestamp <= time()) {
+        return false; // Si la fecha y hora son anteriores al momento actual, no son válidas
+    }
+
+    return true; // Si pasa todas las validaciones, la fecha y hora son válidas
+}
+
+private function programarPublicacionInstagram($instagramDateTime)
+{
+    try {
+        // Aquí debes realizar la lógica para interactuar con la API de Instagram y programar la publicación
+        // Esto puede implicar realizar solicitudes HTTP a la API de Instagram utilizando el token de acceso y la fecha/hora proporcionados
+
+        // Por ahora, simularemos el éxito programando la publicación
+        // Puedes reemplazar este código con la lógica real para interactuar con la API de Instagram
+        Log::info('Publicación programada en Instagram para: ' . $instagramDateTime);
+        return true;
+    } catch (\Exception $e) {
+        Log::error('Error al programar la publicación en Instagram', ['exception' => $e]);
+        return false;
+    }
+}
+
+
+
 
     public function uploadImage(Request $request)
 {
