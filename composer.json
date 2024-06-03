@@ -10,6 +10,7 @@
         "guzzlehttp/guzzle": "^7.8",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
+        "noweh/twitter-api-v2-php": "^3.5",
         "twbs/bootstrap": "5.3.3"
     },
     "require-dev": {
