@@ -19,22 +19,23 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            padding-top: 20px;
+            
+        }
+
+        .menu {
+            width: 100%;
+            background-color: #cce5ff;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .content {
             display: flex;
             justify-content: space-around;
         }
 
         .container {
             width: 45%;
-            margin: 0 auto;
-        }
-
-        .container.calendar {
-            order: 1;
-        }
-
-        .container.form {
-            order: 2;
         }
 
         h1 {
@@ -103,41 +104,65 @@
         .second-section {
             display: none;
         }
+
+        .bg-body-tertiary {
+    --bs-bg-opacity: 1;
+    background-color: rgb(50 134 219) !important;
+    margin-bottom: 20px;
+}
+
+        
     </style>
 </head>
 
 <body class="font-sans antialiased">
     @include('layout.header')
 
-    <div class="container">
-        <h1>Selecciona una fecha y hora para programar tu publicación en Instagram:</h1>
-        <div id="datetime-picker">
-            <label for="date">Fecha:</label>
-            <input type="date" id="date">
-            <label for="time">Hora:</label>
-            <input type="time" id="time">
-            <!-- Agregar un botón para mostrar la segunda sección del formulario -->
-            <button onclick="showSecondSection()">Siguiente</button>
+    
+
+    <div class="content">
+        <div class="container calendar">
+            <div id='calendar'></div>
         </div>
 
-        <!-- Segunda sección del formulario (para cargar la imagen y el texto opcional) -->
-        <div id="second-section" class="second-section">
-            <form action="{{ route('upload.image') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="form-group">
-                    <label for="imagen">Selecciona una imagen:</label>
-                    <input type="file" id="imagen" name="imagen">
-                </div>
-                <div class="form-group">
-                    <label for="descripcion">Descripción (opcional):</label>
-                    <textarea id="descripcion" name="descripcion" rows="4"></textarea>
-                </div>
-                <button type="submit">Subir Imagen</button>
-            </form>
+        <div class="container form">
+            <h1>Selecciona una fecha y hora para programar tu publicación en Instagram:</h1>
+            <div id="datetime-picker">
+                <label for="date">Fecha:</label>
+                <input type="date" id="date">
+                <label for="time">Hora:</label>
+                <input type="time" id="time">
+                <!-- Agregar un botón para mostrar la segunda sección del formulario -->
+                <button onclick="showSecondSection()">Siguiente</button>
+            </div>
+
+            <!-- Segunda sección del formulario (para cargar la imagen y el texto opcional) -->
+            <div id="second-section" class="second-section">
+                <form action="{{ route('upload.image') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="form-group">
+                        <label for="imagen">Selecciona una imagen:</label>
+                        <input type="file" id="imagen" name="imagen">
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción (opcional):</label>
+                        <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+                    </div>
+                    <button type="submit">Subir Imagen</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth'
+            });
+            calendar.render();
+        });
+
         // Función para mostrar la segunda sección del formulario cuando se selecciona la fecha y hora
         function showSecondSection() {
             document.getElementById('second-section').style.display = 'block';
